@@ -1,0 +1,78 @@
+The simple List component is a React component that renders an unordered list (ul) with each item as a SingleListItem component. The component receives an array of items as a prop and renders each item as a SingleListItem. When an item is clicked, the handleClick function updates the state to set the index of the selected item.
+
+The Problems/warnings with this code:
+
+1. The setSelectedIndex hook is not being used correctly. The useState hook should be used to set the initial state of selectedIndex and setSelectedIndex should be used to update the state. The useState hook should be used as follows:
+
+   const [selectedIndex, setSelectedIndex] = useState(null);
+
+2. The isSelected prop of the SingleListItem component is not being set correctly. The isSelected prop should be set to a boolean value indicating whether the item is selected or not. In the current code, isSelected is being set to the selectedIndex, which is not a boolean value.
+
+3. The propTypes for the items prop of the WrappedListComponent are not correct. PropTypes.array should be PropTypes.arrayOf.
+
+Here is the modified component that addresses these issues and also adds a key prop to the SingleListItem components for better performance:
+
+import React, { useState, useEffect, memo } from 'react';
+import PropTypes from 'prop-types';
+
+// Single List Item
+const SingleListItem = memo(({ index, isSelected, onClickHandler, text }) => {
+  return (
+    <li
+      style={{ backgroundColor: isSelected ? 'green' : 'red'}}
+      onClick={() => onClickHandler(index)}
+    >
+      {text}
+    </li>
+  );
+});
+
+SingleListItem.propTypes = {
+  index: PropTypes.number.isRequired,
+  isSelected: PropTypes.bool.isRequired,
+  onClickHandler: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+};
+
+// List Component
+const List = memo(({ items }) => {
+  const [selectedIndex, setSelectedIndex] = useState(null);
+
+  useEffect(() => {
+    setSelectedIndex(null);
+  }, [items]);
+const handleClick = index => {
+    setSelectedIndex(index);
+  };
+
+  return (
+    <ul style={{ textAlign: 'left' }}>
+      {items.map((item, index) => (
+        <SingleListItem
+          key={index}
+          onClickHandler={handleClick}
+          text={item.text}
+          index={index}
+          isSelected={selectedIndex === index}
+        />
+      ))}
+    </ul>
+  )
+});
+
+List.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      text: PropTypes.string.isRequired,
+    })
+  ),
+};
+
+List.defaultProps = {
+  items: null,
+};
+
+export default List;
+
+
+
